@@ -1,0 +1,34 @@
+# Google Apps Script設定ファイル
+.clasp.json
+
+# 認証情報
+credentials.json
+token.json
+client_secret.json
+*.credentials.json
+*-credentials.json
+autodistributor-*.json
+
+# 環境設定
+.env
+.env.local
+.env.*.local
+
+# IDE/エディタ設定
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS生成ファイル
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ログファイル
+*.log 

@@ -1,0 +1,63 @@
+@startuml
+title PDF処理とLINE配信システム
+
+actor User
+participant Menu
+participant PDFProcessor
+participant VisionAPI
+participant GeminiAPI
+participant SheetWriter
+participant MessageTrigger
+participant LINE
+
+' 初期設定フロー
+User -> Menu: 1. OAuth認証設定
+User -> Menu: 2. フォルダID設定
+User -> Menu: 3. PDFフォルダ監視開始/手動実行
+
+' PDF処理フロー
+Menu -> PDFProcessor: processFolder(folderId)
+PDFProcessor -> PDFProcessor: _getUpdatedPDFFiles()
+
+loop 各PDFファイル
+    PDFProcessor -> PDFProcessor: _updateFileName()
+    PDFProcessor -> VisionAPI: extractText()
+    activate VisionAPI
+        VisionAPI -> VisionAPI: uploadPdfToGCS()
+        VisionAPI -> VisionAPI: callVisionAPI()
+        VisionAPI -> VisionAPI: waitForOperation()
+        VisionAPI -> VisionAPI: fetchResult()
+    deactivate VisionAPI
+    VisionAPI --> PDFProcessor: 抽出テキスト
+
+    PDFProcessor -> GeminiAPI: summarize()
+    activate GeminiAPI
+        GeminiAPI -> GeminiAPI: _sanitizeText()
+        GeminiAPI -> GeminiAPI: _createPrompt()
+        GeminiAPI -> GeminiAPI: _callGeminiAPI()
+    deactivate GeminiAPI
+    GeminiAPI --> PDFProcessor: 要約テキスト
+
+    PDFProcessor -> SheetWriter: writeSummary()
+    activate SheetWriter
+        SheetWriter -> SheetWriter: _extractSummaryComponents()
+    deactivate SheetWriter
+end
+
+' LINE配信フロー
+User -> Menu: LINE配信トリガー設定
+Menu -> MessageTrigger: createTriggers()
+activate MessageTrigger
+    MessageTrigger -> MessageTrigger: _processRow()
+    MessageTrigger -> MessageTrigger: _createMessage()
+deactivate MessageTrigger
+
+note right of MessageTrigger
+    設定された時刻に
+    自動実行
+end note
+
+MessageTrigger -> LINE: sendMessage()
+LINE --> User: LINE通知
+
+@enduml
