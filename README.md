@@ -4,6 +4,26 @@
 
 Google ドライブの PDF ファイルを自動で処理し、要約を LINE で配信するシステム
 
+## フォルダ構造
+
+├── api/
+│ ├── geminiAPI.js # Gemini API クライアント
+│ └── visionAPI.js # Vision API クライアント
+├── auth/
+│ └── Oauth.js # OAuth 認証処理
+├── core/
+│ ├── PDFProcessor.js # PDF メイン処理
+│ └── SheetWriter.js # スプレッドシート書き込み
+├── triggers/
+│ ├── MessageTrigger.js # LINE 配信トリガー
+│ └── onOpen.js # メニュー初期化
+├── utils/
+│ └── errorHandler.js # エラー処理
+├── .gitignore # Git 除外設定
+├── README.md # 本ドキュメント
+├── appsscript.json # Apps Script 設定
+└── secuence.puml # シーケンス図
+
 ## セットアップ
 
 1. スクリプトプロパティの設定
@@ -54,4 +74,3 @@ Google ドライブの PDF ファイルを自動で処理し、要約を LINE �
 - GCP プロジェクトの設定が必要
 - 適切な API 権限の設定が必要
 - バケット名は事前に GCS で作成が必要
-# LineAutomation
