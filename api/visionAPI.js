@@ -1,7 +1,10 @@
 class VisionAPI {
   constructor(accessToken) {
     this.accessToken = accessToken;
-    this.bucketName = 'temppdfupload'; // GCSバケット名
+    this.bucketName = PropertiesService.getScriptProperties().getProperty('BUCKET_NAME');
+    if (!this.bucketName) {
+      throw new Error('BUCKET_NAME not found in script properties');
+    }
   }
 
   async extractText(fileId, pdfContent) {

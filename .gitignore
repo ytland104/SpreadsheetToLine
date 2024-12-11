@@ -1,6 +1,5 @@
 # Google Apps Script設定ファイル
 .clasp.json
-appsscript.json
 
 # 認証情報
 credentials.json
