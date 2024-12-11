@@ -1,73 +1,63 @@
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('PDF処理')
-    .addItem('PDFフォルダ監視開始', 'startMonitoring')
-    .addItem('手動でPDF処理実行', 'processManually')
     .addItem('OAuth認証設定', 'showAuthUrl')
-    .addItem('フォルダID設定', 'setFolderID')
+    .addItem('フォルダID設定', 'showFolderIdDialog')
+    .addSeparator()
+    .addItem('PDF処理実行（手動）', 'processPDFManually')
+    .addItem('PDF処理トリガー設定', 'setupPDFProcessingTrigger')
+    .addSeparator()
+    .addItem('LINE配信トリガー設定', 'setupMessageTrigger')
     .addToUi();
 }
 
-function startMonitoring() {
-  const scriptProperties = PropertiesService.getScriptProperties();
-  const folderId = scriptProperties.getProperty('FOLDER_ID');
-  
-  if (!folderId) {
-    SpreadsheetApp.getUi().alert('フォルダIDが設定されていません。\n「フォルダID設定」から設定してください。');
-    return;
-  }
-
+function setupPDFProcessingTrigger() {
   // 既存のトリガーを削除
   const triggers = ScriptApp.getProjectTriggers();
   triggers.forEach(trigger => {
-    if (trigger.getHandlerFunction() === 'processManually') {
+    if (trigger.getHandlerFunction() === 'processPDFManually') {
       ScriptApp.deleteTrigger(trigger);
     }
   });
 
-  // 新しいトリガーを作成（1時間ごとに実行）
-  ScriptApp.newTrigger('processManually')
+  // 1時間ごとのトリガーを設定
+  ScriptApp.newTrigger('processPDFManually')
     .timeBased()
     .everyHours(1)
     .create();
   
-  SpreadsheetApp.getUi().alert('フォルダの監視を開始しました。\n1時間ごとに新規PDFファイルをチェックします。');
+  SpreadsheetApp.getActiveSpreadsheet().toast('PDF処理の定期実行トリガーを設定しました', '設定完了');
 }
 
-function setFolderID() {
-  const ui = SpreadsheetApp.getUi();
-  const scriptProperties = PropertiesService.getScriptProperties();
-  const currentFolderId = scriptProperties.getProperty('FOLDER_ID') || '';
+function setupMessageTrigger() {
+  // 既存のトリガーを削除
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'processMessages') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  // 5分ごとのトリガーを設定
+  ScriptApp.newTrigger('processMessages')
+    .timeBased()
+    .everyMinutes(5)
+    .create();
   
+  SpreadsheetApp.getActiveSpreadsheet().toast('LINE配信トリガーを設定しました', '設定完了');
+}
+
+function showFolderIdDialog() {
+  const ui = SpreadsheetApp.getUi();
   const result = ui.prompt(
     'フォルダID設定',
-    '監視するフォルダのIDを入力してください：\n' +
-    '(現在の設定: ' + currentFolderId + ')',
+    'PDFファイルを監視するフォルダのIDを入力してください：',
     ui.ButtonSet.OK_CANCEL
   );
 
   if (result.getSelectedButton() == ui.Button.OK) {
     const folderId = result.getResponseText().trim();
-    try {
-      // フォルダIDの有効性チェックy
-      DriveApp.getFolderById(folderId);
-      scriptProperties.setProperty('FOLDER_ID', folderId);
-      ui.alert('フォルダIDを保存しました。');
-    } catch (e) {
-      ui.alert('無効なフォルダIDです。正しいIDを入力してください。');
-    }
+    PropertiesService.getScriptProperties().setProperty('FOLDER_ID', folderId);
+    ui.alert('フォルダIDを設定しました');
   }
-}
-
-function processManually() {
-  const scriptProperties = PropertiesService.getScriptProperties();
-  const folderId = scriptProperties.getProperty('FOLDER_ID');
-  
-  if (!folderId) {
-    SpreadsheetApp.getUi().alert('フォルダIDが設定されていません。\n「フォルダID設定」から設定してください。');
-    return;
-  }
-
-  const processor = new PDFProcessor();
-  processor.processFolder(folderId);
 } 

@@ -46,18 +46,13 @@ end
 
 ' LINE配信フロー
 User -> Menu: LINE配信トリガー設定
-Menu -> MessageTrigger: createTriggers()
+Menu -> MessageTrigger: setupMessageTrigger()
 activate MessageTrigger
-    MessageTrigger -> MessageTrigger: _processRow()
-    MessageTrigger -> MessageTrigger: _createMessage()
+    MessageTrigger -> MessageTrigger: processMessages()
+    MessageTrigger -> SheetWriter: getUnsentMessages()
+    SheetWriter --> MessageTrigger: 未配信メッセージ
+    MessageTrigger -> LINE: sendMessage()
 deactivate MessageTrigger
-
-note right of MessageTrigger
-    設定された時刻に
-    自動実行
-end note
-
-MessageTrigger -> LINE: sendMessage()
 LINE --> User: LINE通知
 
 @enduml

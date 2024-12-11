@@ -101,4 +101,25 @@ class PDFProcessor {
     }
     return fileName;
   }
+
+  async processPDFManually() {
+    try {
+      const folderId = PropertiesService.getScriptProperties().getProperty('FOLDER_ID');
+      if (!folderId) {
+        throw new Error('フォルダIDが設定されていません');
+      }
+
+      await this.processFolder(folderId);
+      SpreadsheetApp.getActiveSpreadsheet().toast('PDF処理が完了しました', '処理完了');
+    } catch (error) {
+      Logger.log(`Error in processPDFManually: ${error.message}`);
+      SpreadsheetApp.getActiveSpreadsheet().toast('エラーが発生しました: ' + error.message, 'エラー');
+    }
+  }
+}
+
+// トリガーから呼び出される関数
+function processPDFManually() {
+  const processor = new PDFProcessor();
+  processor.processPDFManually();
 } 
