@@ -29,3 +29,5 @@ Thumbs.db
 
 # ログファイル
 *.log
+
+.clasp.json
