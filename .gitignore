@@ -1,7 +1,3 @@
-# Google Apps Script設定ファイル
-.clasp.json
-appsscript.json
-
 # 認証情報
 credentials.json
 token.json
@@ -32,4 +28,4 @@ ehthumbs.db
 Thumbs.db
 
 # ログファイル
-*.log 
+*.log

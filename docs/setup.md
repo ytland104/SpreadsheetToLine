@@ -33,12 +33,11 @@
 
 ## 4. Google Apps Script の設定
 
-- [ ] スクリプトプロパティの設定： `SCRIPT_ID=your_script_id
-CLIENT_ID=your_client_id
-CLIENT_SECRET=your_client_secret
-LINE_ACCESS_TOKEN=your_line_token
-FOLDER_ID=your_folder_id
-BUCKET_NAME=your_bucket_name `
+- [ ] .clasp.json の設定 `json
+{
+  "scriptId": "your_script_id",
+  "rootDir": "./GooglefileCheck"
+}  `
 - [ ] 必要なスコープの承認
 - [ ] デプロイの設定（ウェブアプリケーション）
 

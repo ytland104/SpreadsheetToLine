@@ -1,0 +1,77 @@
+@startuml
+title PDF処理とLINE配信システムのシーケンス
+
+' アクターとコンポーネントの定義
+actor User
+participant "Menu\n(onOpen.js)" as Menu
+participant "PDFProcessor" as PDFProcessor
+participant "VisionAPI" as VisionAPI
+participant "GeminiAPI" as GeminiAPI
+participant "SheetWriter" as SheetWriter
+participant "MessageTrigger" as MessageTrigger
+participant "ErrorHandler" as ErrorHandler
+participant LINE
+
+' 初期設定フロー
+group 初期設定
+    User -> Menu: OAuth認証設定
+    User -> Menu: フォルダID設定
+    User -> Menu: トリガー設定
+end
+
+' PDF処理フロー
+group PDF処理
+    Menu -> PDFProcessor: processPDFManually()
+    activate PDFProcessor
+        PDFProcessor -> PDFProcessor: processFolder()
+        
+        loop 各PDFファイル
+            PDFProcessor -> VisionAPI: extractText()
+            activate VisionAPI
+                VisionAPI -> VisionAPI: uploadPdfToGCS()
+                VisionAPI -> VisionAPI: callVisionAPI()
+                VisionAPI -> VisionAPI: waitForOperation()
+                VisionAPI -> VisionAPI: fetchResult()
+                VisionAPI --> PDFProcessor: 抽出テキスト
+            deactivate VisionAPI
+            
+            PDFProcessor -> GeminiAPI: summarize()
+            activate GeminiAPI
+                GeminiAPI -> GeminiAPI: _sanitizeText()
+                GeminiAPI -> GeminiAPI: _createPrompt()
+                GeminiAPI -> GeminiAPI: _callGeminiAPI()
+                GeminiAPI --> PDFProcessor: 要約テキスト
+            deactivate GeminiAPI
+            
+            PDFProcessor -> SheetWriter: writeSummary()
+            activate SheetWriter
+                SheetWriter -> SheetWriter: _extractSummaryComponents()
+                SheetWriter -> SheetWriter: _setupSummaryHeaders()
+                SheetWriter --> PDFProcessor: 書き込み結果
+            deactivate SheetWriter
+            
+            alt エラー発生時
+                PDFProcessor -> ErrorHandler: record()
+                ErrorHandler -> SheetWriter: エラーログ記録
+            end
+        end
+    deactivate PDFProcessor
+end
+
+' LINE配信フロー
+group LINE配信
+    Menu -> MessageTrigger: setupMessageTrigger()
+    activate MessageTrigger
+        MessageTrigger -> SheetWriter: 未配信メッセージ取得
+        SheetWriter --> MessageTrigger: 配信対象データ
+        
+        loop 各メッセージ
+            MessageTrigger -> MessageTrigger: _createLineMessage()
+            MessageTrigger -> LINE: sendLineMessage()
+            LINE --> MessageTrigger: 配信結果
+            MessageTrigger -> SheetWriter: 配信状態更新
+        end
+    deactivate MessageTrigger
+end
+
+@enduml 
